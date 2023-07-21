@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApiAuthors.Entities;
 
@@ -31,7 +30,7 @@ namespace WebApiAuthors.Controllers
         }
 
         [HttpPut("{id:int}")]
-        public async Task<ActionResult> UpdateAuthor(Author author, int id)
+        public async Task<ActionResult> UpdateAuthor([FromBody] Author author, [FromRoute] int id)
         {
             if (author.Id != id)
             {
@@ -44,7 +43,7 @@ namespace WebApiAuthors.Controllers
         }
 
         [HttpDelete("{id:int}")]
-        public async Task<ActionResult> DeleteAuthor(int id)
+        public async Task<ActionResult> DeleteAuthor([FromRoute] int id)
         {
             bool existAuthor = await _context.Authors.AnyAsync(x => x.Id == id);
 
