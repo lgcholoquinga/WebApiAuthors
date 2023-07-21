@@ -1,11 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace WebApiAuthors.Entities
+namespace WebApiAuthors.Dtos
 {
-    public class Author
+    public class AuthorCreationDto
     {
-        public int Id { get; set; }
-
         [Required]
         [MinLength(3)]
         public string Name { get; set; }
