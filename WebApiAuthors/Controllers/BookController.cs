@@ -20,39 +20,66 @@ namespace WebApiAuthors.Controllers
             this.mapper = mapper;
         }
 
-        [HttpGet("{id:int}")]
-        public async Task<ActionResult<BookDto>> GetBookById([FromRoute] int id)
+        [HttpGet]
+        public async Task<ActionResult<List<BookDto>>> GetAllBooks()
         {
-            //Book book = await context.Books.Include(bookDb => bookDb.Comments).FirstOrDefaultAsync(x => x.Id == id);
+            List<Book> books = await context.Books.ToListAsync();
+            return mapper.Map<List<BookDto>>(books);
+        }
 
-            Book book = await context.Books.FirstOrDefaultAsync(x => x.Id == id);
+        [HttpGet("{id:int}")]
+        public async Task<ActionResult<BookDtoWithAuthors>> GetBookById([FromRoute] int id)
+        {
+            Book book = await context.Books
+                .Include(bookDB => bookDB.AuthorsBooks)
+                .ThenInclude(authorBookBD => authorBookBD.Author)
+                .FirstOrDefaultAsync(x => x.Id == id);
 
             if (book == null)
             {
                 return NotFound($"Book does not exist with id: {id}");
             }
 
-            return mapper.Map<BookDto>(book);
+            book.AuthorsBooks = book.AuthorsBooks.OrderBy(x => x.Order).ToList();
+
+            return mapper.Map<BookDtoWithAuthors>(book);
         }
 
         [HttpPost]
         public async Task<ActionResult> CreateBook([FromBody] BookCreationDto bookCreationDto)
         {
+            if (bookCreationDto.AuthorsIds == null)
+            {
+                return BadRequest("You can't create a book without an actor.");
+            }
 
+            List<int> authorsIds = await context.Authors
+                .Where(x => bookCreationDto.AuthorsIds.Contains(x.Id))
+                .Select(x => x.Id)
+                .ToListAsync();
 
-
-            //bool existAuthor = await context.Authors.AnyAsync(x => x.Id == book.AuthorId);
-
-            //if (!existAuthor)
-            //{
-            //    return BadRequest($"Author does not exist with id: {book.AuthorId}");
-            //}
-
+            if (bookCreationDto.AuthorsIds.Count != authorsIds.Count)
+            {
+                return BadRequest("One of the submitted authors does not exist.");
+            }
 
             Book book = mapper.Map<Book>(bookCreationDto);
+            OrderAuthorIds(book);
+
             context.Add(book);
             await context.SaveChangesAsync();
             return Ok("Book created.");
+        }
+
+        private void OrderAuthorIds(Book book)
+        {
+            if (book.AuthorsBooks != null)
+            {
+                for (int i = 0; i < book.AuthorsBooks.Count; i++)
+                {
+                    book.AuthorsBooks[i].Order = i;
+                }
+            }
         }
     }
 }

@@ -7,5 +7,7 @@ namespace WebApiAuthors.Dtos
         [Required]
         [MinLength(3)]
         public string Title { get; set; }
+
+        public List<int> AuthorsIds { get; set; }
     }
 }

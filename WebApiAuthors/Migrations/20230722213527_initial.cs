@@ -5,7 +5,7 @@
 namespace WebApiAuthors.Migrations
 {
     /// <inheritdoc />
-    public partial class Comments : Migration
+    public partial class initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -37,12 +37,37 @@ namespace WebApiAuthors.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "AuthorsBooks",
+                columns: table => new
+                {
+                    BookId = table.Column<int>(type: "int", nullable: false),
+                    AuthorId = table.Column<int>(type: "int", nullable: false),
+                    Order = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AuthorsBooks", x => new { x.AuthorId, x.BookId });
+                    table.ForeignKey(
+                        name: "FK_AuthorsBooks_Authors_AuthorId",
+                        column: x => x.AuthorId,
+                        principalTable: "Authors",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_AuthorsBooks_Books_BookId",
+                        column: x => x.BookId,
+                        principalTable: "Books",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Comments",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Content = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     BookId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -57,6 +82,11 @@ namespace WebApiAuthors.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_AuthorsBooks_BookId",
+                table: "AuthorsBooks",
+                column: "BookId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Comments_BookId",
                 table: "Comments",
                 column: "BookId");
@@ -66,10 +96,13 @@ namespace WebApiAuthors.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Authors");
+                name: "AuthorsBooks");
 
             migrationBuilder.DropTable(
                 name: "Comments");
+
+            migrationBuilder.DropTable(
+                name: "Authors");
 
             migrationBuilder.DropTable(
                 name: "Books");

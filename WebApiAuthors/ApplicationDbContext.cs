@@ -13,7 +13,7 @@ namespace WebApiAuthors
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<AuthorBook>().
-                HasKey(al => new { al.AuhtorId, al.BookId });
+                HasKey(al => new { al.AuthorId, al.BookId });
         }
 
         public DbSet<Author> Authors { get; set; }

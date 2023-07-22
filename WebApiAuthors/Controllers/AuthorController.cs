@@ -27,17 +27,21 @@ namespace WebApiAuthors.Controllers
         }
 
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<AuthorDto>> GetAuthorById([FromRoute] int id)
+        public async Task<ActionResult<AuthorDtoWithBooks>> GetAuthorById([FromRoute] int id)
         {
-            Author author = await _context.Authors.FirstOrDefaultAsync(x => x.Id == id);
+            Author author = await _context.Authors
+                .Include(authorDB => authorDB.AuthorsBooks)
+                .ThenInclude(authorBookDB => authorBookDB.Book)
+                .FirstOrDefaultAsync(x => x.Id == id);
 
             if (author == null)
             {
                 return NotFound($"Author does not exist with id: {id}");
             }
 
-            AuthorDto authorDto = mapper.Map<AuthorDto>(author);
-            return authorDto;
+            author.AuthorsBooks = author.AuthorsBooks.OrderBy(x => x.Order).ToList();
+
+            return mapper.Map<AuthorDtoWithBooks>(author);
         }
 
         [HttpPost]
