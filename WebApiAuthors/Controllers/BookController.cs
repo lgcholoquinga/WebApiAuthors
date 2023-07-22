@@ -27,7 +27,7 @@ namespace WebApiAuthors.Controllers
             return mapper.Map<List<BookDto>>(books);
         }
 
-        [HttpGet("{id:int}")]
+        [HttpGet("{id:int}", Name = "getBookById")]
         public async Task<ActionResult<BookDtoWithAuthors>> GetBookById([FromRoute] int id)
         {
             Book book = await context.Books
@@ -68,7 +68,9 @@ namespace WebApiAuthors.Controllers
 
             context.Add(book);
             await context.SaveChangesAsync();
-            return Ok("Book created.");
+
+            BookDto bookDto = mapper.Map<BookDto>(book);
+            return CreatedAtRoute("getBookById", new { id = book.Id }, bookDto);
         }
 
         private void OrderAuthorIds(Book book)

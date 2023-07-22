@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using WebApiAuthors.Constants;
 using WebApiAuthors.Dtos;
 using WebApiAuthors.Entities;
 
@@ -26,7 +27,7 @@ namespace WebApiAuthors.Controllers
             return mapper.Map<List<AuthorDto>>(authors);
         }
 
-        [HttpGet("{id:int}")]
+        [HttpGet("{id:int}", Name = "getAuthorById")]
         public async Task<ActionResult<AuthorDtoWithBooks>> GetAuthorById([FromRoute] int id)
         {
             Author author = await _context.Authors
@@ -50,7 +51,9 @@ namespace WebApiAuthors.Controllers
             Author author = mapper.Map<Author>(authorCreationDto);
             _context.Add(author);
             await _context.SaveChangesAsync();
-            return Ok("Author created.");
+            AuthorDto authorDto = mapper.Map<AuthorDto>(author);
+
+            return CreatedAtRoute("getAuthorById", new { id = author.Id }, authorDto);
         }
 
         [HttpPut("{id:int}")]

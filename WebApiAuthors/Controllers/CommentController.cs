@@ -20,6 +20,20 @@ namespace WebApiAuthors.Controllers
             this.mapper = mapper;
         }
 
+        [HttpGet("{id:int}", Name = "getCommentById")]
+        public async Task<ActionResult<CommentDto>> GetCommentById([FromRoute] int id)
+        {
+            Comment comment = await context.Comments.FirstOrDefaultAsync(x => x.Id == id);
+
+            if(comment == null)
+            {
+                return NotFound($"Coment does not exist with id: {id}");
+            }
+
+            CommentDto commentDto = mapper.Map<CommentDto>(comment);
+            return Ok(commentDto);
+        }
+
         [HttpGet]
         public async Task<ActionResult<List<CommentDto>>> getCommentsByBookId(int bookId)
         {
@@ -41,7 +55,10 @@ namespace WebApiAuthors.Controllers
             comment.BookId = bookId;
             context.Add(comment);
             await context.SaveChangesAsync();
-            return Ok("Comment created.");
+
+            CommentDto commentDto = mapper.Map<CommentDto>(comment);
+
+            return CreatedAtRoute("getCommentById", new { id = comment.Id, bookId}, commentDto);
         }
       
     }
