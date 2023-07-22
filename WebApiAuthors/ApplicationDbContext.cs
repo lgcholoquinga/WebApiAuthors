@@ -9,10 +9,19 @@ namespace WebApiAuthors
         {
         }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<AuthorBook>().
+                HasKey(al => new { al.AuhtorId, al.BookId });
+        }
+
         public DbSet<Author> Authors { get; set; }
 
         public DbSet<Book> Books { get; set; }
 
         public DbSet<Comment> Comments { get; set; }
+
+        public DbSet<AuthorBook> AuthorsBooks { get; set; }
     }
 }

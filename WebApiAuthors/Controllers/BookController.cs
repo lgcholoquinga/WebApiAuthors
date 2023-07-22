@@ -23,6 +23,8 @@ namespace WebApiAuthors.Controllers
         [HttpGet("{id:int}")]
         public async Task<ActionResult<BookDto>> GetBookById([FromRoute] int id)
         {
+            //Book book = await context.Books.Include(bookDb => bookDb.Comments).FirstOrDefaultAsync(x => x.Id == id);
+
             Book book = await context.Books.FirstOrDefaultAsync(x => x.Id == id);
 
             if (book == null)
