@@ -10,6 +10,8 @@ namespace WebApiAuthors.Entities
         [MinLength(3)]
         public string Title { get; set; }
 
+        public DateTime? DatePublication { get; set; }
+
         public List<Comment> Comments { get; set; }
 
         public List<AuthorBook> AuthorsBooks { get; set; }

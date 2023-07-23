@@ -60,6 +60,31 @@ namespace WebApiAuthors.Controllers
 
             return CreatedAtRoute("getCommentById", new { id = comment.Id, bookId}, commentDto);
         }
+
+        [HttpPut("{id:int}")]
+        public async Task<ActionResult> UpdateComment([FromRoute] int bookId,[FromRoute] int id, CommentCreateDto commentCreateDto)
+        {
+            bool existBook = await context.Books.AnyAsync(x => x.Id == bookId);
+
+            if (!existBook)
+            {
+                return NotFound($"Book does not exist with id: {bookId}");
+            }
+
+            bool existComment = await context.Comments.AnyAsync(x => x.Id == id);
+
+            if (!existComment)
+            {
+                return NotFound($"Comment does not exist with id: {id}");
+            }
+
+            Comment comment = mapper.Map<Comment>(commentCreateDto);
+            comment.Id = id;
+            comment.BookId = bookId;
+            context.Update(comment);
+            await context.SaveChangesAsync();
+            return NoContent();
+        }
       
     }
 }

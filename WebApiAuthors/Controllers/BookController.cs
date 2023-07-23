@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApiAuthors.Dtos;
@@ -71,6 +72,65 @@ namespace WebApiAuthors.Controllers
 
             BookDto bookDto = mapper.Map<BookDto>(book);
             return CreatedAtRoute("getBookById", new { id = book.Id }, bookDto);
+        }
+
+        [HttpPut("{id:int}")]
+        public async Task<ActionResult> UpdateBook([FromRoute] int id, BookCreationDto bookCreationDto)
+        {
+            Book bookDB = await context.Books
+                .Include(auhtorsDB => auhtorsDB.AuthorsBooks)
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+            if (bookDB == null)
+            {
+                return NotFound($"Book does not exist with id: {id}");
+            }
+
+            Book book = mapper.Map(bookCreationDto, bookDB);
+            OrderAuthorIds(book);            
+            await context.SaveChangesAsync();
+            return NoContent();
+        }
+
+        [HttpPatch("{id:int}")]
+        public async Task<ActionResult> UpdateBookPatch([FromRoute] int id, JsonPatchDocument<BookUpdateDto> bookUpdateDto)
+        {
+            if (bookUpdateDto == null)
+            {
+                return BadRequest();
+            }
+
+            Book book = await context.Books.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (book == null)
+            {
+                return NotFound($"Book does not exist with id: {id}");
+            }
+
+            BookUpdateDto bookDto = mapper.Map<BookUpdateDto>(book);
+            bookUpdateDto.ApplyTo(bookDto, ModelState);
+            var isValid = TryValidateModel(bookUpdateDto);
+
+            if (!isValid)
+            {
+                return BadRequest();
+            }
+
+            mapper.Map(bookDto, book);
+            await context.SaveChangesAsync();
+            return NoContent();
+        }
+
+        [HttpDelete("{id:int}")]
+        public async Task<ActionResult> DeleteBook([FromRoute] int id)
+        {
+            bool existBook = await context.Books.AnyAsync(x => x.Id == id);
+
+            if (!existBook) return NotFound($"Book does not exist with id:  {id}");
+
+            context.Remove(new Book() { Id = id });
+            await context.SaveChangesAsync();
+            return NoContent();
         }
 
         private void OrderAuthorIds(Book book)

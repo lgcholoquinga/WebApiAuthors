@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using WebApiAuthors.Constants;
 using WebApiAuthors.Dtos;
 using WebApiAuthors.Entities;
 
@@ -71,7 +70,7 @@ namespace WebApiAuthors.Controllers
 
             _context.Update(author);
             await _context.SaveChangesAsync();
-            return Ok("Author updated.");
+            return NoContent();
         }
 
         [HttpDelete("{id:int}")]
@@ -79,11 +78,11 @@ namespace WebApiAuthors.Controllers
         {
             bool existAuthor = await _context.Authors.AnyAsync(x => x.Id == id);
 
-            if (!existAuthor) return NotFound($"Author not exist with id:  {id}");
+            if (!existAuthor) return NotFound($"Author does not exist with id:  {id}");
 
             _context.Remove(new Author() {Id = id});
             await _context.SaveChangesAsync();
-            return Ok("Author deleted.");
+            return NoContent();
         }
     }
 }

@@ -2,14 +2,12 @@
 
 namespace WebApiAuthors.Dtos
 {
-    public class BookCreationDto
+    public class BookUpdateDto
     {
         [Required]
         [MinLength(3)]
         public string Title { get; set; }
 
         public DateTime DatePublication { get; set; }
-
-        public List<int> AuthorsIds { get; set; }
     }
 }
