@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -11,7 +12,6 @@ namespace WebApiAuthors.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [AllowAnonymous]
     public class AuthController : ControllerBase
     {
         private readonly UserManager<IdentityUser> manager;
@@ -62,12 +62,30 @@ namespace WebApiAuthors.Controllers
             return BuildToken(userCredentialsDto);
         }
 
+        [HttpGet("RenewToken")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public ActionResult<AuthenticationResponse> RenewToken()
+        {
+            Claim emailClaim = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+            string email = emailClaim?.Value;
+
+            if (string.IsNullOrEmpty(email))
+            {
+                return Unauthorized();
+            }
+
+            UserCredentialsDto user = new UserCredentialsDto()
+            {
+                Email = email,
+            };
+
+            return BuildToken(user);
+        }
+
         private AuthenticationResponse BuildToken(UserCredentialsDto userCredentialsDto)
         {
             List<Claim> claims = new List<Claim>() { 
-            
                 new Claim("email", userCredentialsDto.Email)
-
             };
 
             SymmetricSecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtKey"]));
